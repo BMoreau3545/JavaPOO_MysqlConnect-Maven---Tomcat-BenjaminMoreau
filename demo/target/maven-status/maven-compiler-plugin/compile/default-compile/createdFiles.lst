@@ -1,0 +1,16 @@
+com\example\dao\TypeAlimentDAO.class
+com\example\model\TypeAliment.class
+com\example\servlet\TypeAlimentServlet.class
+com\example\util\Routeur.class
+com\example\Main.class
+com\example\dao\DatabaseConnection.class
+com\example\servlet\DataAccessServletTest.class
+com\example\dao\AlimentDAO.class
+com\example\model\Couleur.class
+com\example\model\Aliment.class
+com\example\servlet\CouleurServlet.class
+com\example\dao\CouleurDAO.class
+com\example\dao\IGenericCRUD.class
+com\example\servlet\AlimentServlet.class
+com\example\util\ResultSetTableDisplay.class
+com\example\util\ServletUtils.class

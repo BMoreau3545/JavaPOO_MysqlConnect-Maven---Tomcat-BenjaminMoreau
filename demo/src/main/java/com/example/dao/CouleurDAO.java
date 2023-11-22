@@ -1,6 +1,5 @@
 package com.example.dao;
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +10,7 @@ import java.sql.Statement;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.example.model.Couleur;
 import com.example.util.ResultSetTableDisplay;
 import com.example.util.ServletUtils;
 
@@ -21,6 +21,7 @@ import javax.json.JsonObject;
 public class CouleurDAO implements IGenericCRUD {
 
     private DatabaseConnection dbConnection;
+    private Couleur couleur = new Couleur();
 
     public CouleurDAO(DatabaseConnection dbConnection) {
         this.dbConnection = dbConnection;
@@ -82,12 +83,14 @@ public class CouleurDAO implements IGenericCRUD {
             // Récupérer les valeurs 'nom' et 'hexadecimal_rvb'
             String nom = jsonObject.getString("nom", "");
             String hexadecimal_rvb = jsonObject.getString("hexadecimal_rvb", "");
+            couleur.setHexadecimal_rvb(hexadecimal_rvb);
+            couleur.setNom(nom);
 
             // Validation
             ServletUtils.validateRequestData(jsonObject, "nom", "hexadecimal_rvb");
 
             // Insérer la nouvelle couleur et récupérer un ResultSet
-            ResultSet resultSet = insertCouleurAndGet(nom, hexadecimal_rvb);
+            ResultSet resultSet = insertCouleurAndGet(couleur);
 
             // Utiliser toJson pour convertir le ResultSet en JSON
             String jsonResponse = ServletUtils.convertResultSetToJson(resultSet);
@@ -111,9 +114,12 @@ public class CouleurDAO implements IGenericCRUD {
             JsonObject jsonObject = ServletUtils.parseJsonRequest(request);
     
             // Récupérer les données 'id', 'nom', et 'hexadecimal_rvb'
-            int id = jsonObject.getInt("id");
+            // int id = jsonObject.getInt("id");
             String nomCouleur = jsonObject.getString("nom", "");
             String hexadecimal_rvb = jsonObject.getString("hexadecimal_rvb", "");
+            couleur.setId(jsonObject.getInt("id"));
+            couleur.setNom(nomCouleur);
+            couleur.setHexadecimal_rvb(hexadecimal_rvb);
     
             // Validation
             if (nomCouleur.isEmpty() || hexadecimal_rvb.isEmpty()) {
@@ -122,7 +128,7 @@ public class CouleurDAO implements IGenericCRUD {
             }
     
             // Mettre à jour la couleur
-            boolean updated = updateCouleur(id, nomCouleur, hexadecimal_rvb);
+            boolean updated = updateCouleur(couleur);
     
             // Envoyer une réponse en fonction du succès de la mise à jour
             if (updated) {
@@ -147,11 +153,11 @@ public class CouleurDAO implements IGenericCRUD {
             JsonObject jsonObject = ServletUtils.parseJsonRequest(request);
     
             // Récupérer l'identifiant de la couleur à supprimer
-            int id = jsonObject.getInt("id");
-            
+            // int id = jsonObject.getInt("id");
+            //couleur.setId(jsonObject.getInt("id"));
     
             // Supprimer la couleur
-            boolean deleted = deleteCouleur(id);
+            boolean deleted = deleteCouleur(couleur.setId(jsonObject.getInt("id")));
     
             // Envoyer une réponse en fonction du succès de la suppression
             if (deleted) {
@@ -258,6 +264,36 @@ public class CouleurDAO implements IGenericCRUD {
         
         return resultSet;
     }
+
+    public ResultSet insertCouleurAndGet(Couleur couleur) throws SQLException {
+        String insertSql = "INSERT INTO couleur (nom, hexadecimal_rvb) VALUES (?, ?)";
+        String selectSql = "SELECT * FROM couleur WHERE id = ?";
+        
+        dbConnection.connect();
+        
+        // Insertion de la nouvelle couleur
+        PreparedStatement insertStatement = dbConnection.getJdbcConnection().prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+        insertStatement.setString(1, couleur.getNom());
+        insertStatement.setString(2, couleur.getHexadecimal_rvb());
+        insertStatement.executeUpdate();
+        
+        // Récupération de l'identifiant généré
+        ResultSet generatedKeys = insertStatement.getGeneratedKeys();
+        if (!generatedKeys.next()) {
+            throw new SQLException("Creating color failed, no ID obtained.");
+        }
+        int newColorId = generatedKeys.getInt(1);
+        insertStatement.close();
+    
+        // Récupération de la nouvelle couleur insérée
+        PreparedStatement selectStatement = dbConnection.getJdbcConnection().prepareStatement(selectSql);
+        selectStatement.setInt(1, newColorId);
+        ResultSet resultSet = selectStatement.executeQuery();
+    
+        // Note: La gestion de la fermeture du ResultSet et de la déconnexion de la base de données devrait être effectuée par l'appelant.
+        
+        return resultSet;
+    }
     
 
     public ResultSet listAllCouleurs() throws SQLException {
@@ -286,6 +322,21 @@ public class CouleurDAO implements IGenericCRUD {
         return rowUpdated;
     }
 
+    public boolean updateCouleur(Couleur couleur) throws SQLException {
+        String sql = "UPDATE couleur SET nom = ?, hexadecimal_rvb = ? WHERE id = ?";
+        dbConnection.connect();
+
+        PreparedStatement statement = dbConnection.getJdbcConnection().prepareStatement(sql);
+        statement.setString(1, couleur.getNom());
+        statement.setString(2, couleur.getHexadecimal_rvb()); // Mise à jour de la valeur hexadecimal_rvb
+        statement.setInt(3, couleur.getId());
+
+        boolean rowUpdated = statement.executeUpdate() > 0;
+        statement.close();
+        dbConnection.disconnect();
+        return rowUpdated;
+    }
+
     public boolean deleteCouleur(int id) throws SQLException {
         String sql = "DELETE FROM couleur WHERE id = ?";
 
@@ -295,9 +346,16 @@ public class CouleurDAO implements IGenericCRUD {
         statement.setInt(1, id);
 
         boolean rowDeleted = statement.executeUpdate() > 0;
+
+        if (rowDeleted) {
+            couleur.setLastIdDeleted(id);
+        }
+
         statement.close();
         dbConnection.disconnect();
         return rowDeleted;
+
+
     }
 
     public ResultSet getLastInsertedColor() throws SQLException {

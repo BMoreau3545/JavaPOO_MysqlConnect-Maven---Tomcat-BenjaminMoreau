@@ -11,10 +11,10 @@ GET http://localhost:8080/couleur
 
 ###
 POST  http://localhost:8080/couleur
-content-type: application/json
+content-type: application/json; charset=utf-8
 
 {
-    "nom": "test13",
+    "nom": "Cuivré",
     "hexadecimal_rvb": "#000000"
 }
 
@@ -33,7 +33,7 @@ DELETE  http://localhost:8080/couleur
 content-type: application/json
 
 {
-    "id": 49
+    "id": 52
 }
 
 ###
@@ -87,3 +87,31 @@ GET http://localhost:8080/aliment?id=3
 
 ###
 GET http://localhost:8080/aliment?name=Orange
+
+###
+POST http://localhost:8080/typealiment
+content-type: application/json; charset=utf-8
+
+{
+    "nom": "Cucurbitacés"
+}
+
+###
+GET http://localhost:8080/typealiment
+
+###
+PUT http://localhost:8080/typealiment
+content-type: application/json
+
+{
+    "id": 3,
+    "nom": "Condiment"
+}
+
+###
+DELETE http://localhost:8080/typealiment
+content-type: application/json
+
+{
+    "id": 6
+}

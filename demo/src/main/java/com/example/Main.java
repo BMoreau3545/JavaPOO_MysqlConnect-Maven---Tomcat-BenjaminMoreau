@@ -10,6 +10,7 @@ import com.example.dao.DatabaseConnection;
 import com.example.servlet.AlimentServlet;
 import com.example.servlet.CouleurServlet;
 import com.example.servlet.DataAccessServletTest;
+import com.example.servlet.TypeAlimentServlet;
 
 public class Main {
     public static void main(String[] args) throws LifecycleException {
@@ -21,7 +22,7 @@ public class Main {
         // Initialisation de la connexion à la base de données
         String jdbcURL = "jdbc:mysql://localhost:3306/alimentations";
         String jdbcUsername = "root";
-        String jdbcPassword = "root";
+        String jdbcPassword = "";
         DatabaseConnection dbConnection = new DatabaseConnection(jdbcURL, jdbcUsername, jdbcPassword);
 
 
@@ -45,9 +46,13 @@ public class Main {
         couleurServletWrapper.addMapping("/couleur/*");     
         
        // Ajouter un autre servlet pour AlimentServlet
-        Wrapper alimentServletWrapper = Tomcat.addServlet(context, "ailmentServlet", new AlimentServlet());
+        Wrapper alimentServletWrapper = Tomcat.addServlet(context, "AlimentServlet", new AlimentServlet());
         alimentServletWrapper.setLoadOnStartup(1);
-        alimentServletWrapper.addMapping("/aliment/*");          
+        alimentServletWrapper.addMapping("/aliment/*");  
+        
+        Wrapper typeAlimentServletWrapper = Tomcat.addServlet(context, "TypeAlimentServlet", new TypeAlimentServlet());
+        typeAlimentServletWrapper.setLoadOnStartup(1);
+        typeAlimentServletWrapper.addMapping("/typealiment/*");
         
         tomcat.getConnector();
 

@@ -22,6 +22,15 @@
         <url-pattern>/aliment</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>TypeAlimentServlet</servlet-name>
+        <servlet-class>TypeAlimentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TypeAlimentServlet</servlet-name>
+        <url-pattern>/typealiment</url-pattern>
+    </servlet-mapping>
+
 
     <servlet>
         <servlet-name>DataAccessServlet</servlet-name>
